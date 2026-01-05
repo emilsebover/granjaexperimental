@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Registro Avícola</h1>
+            <h1>Granja experimental Carbó</h1>
             <select id="selectorSemana" onchange="actualizarTablaVista()">
                 <option value="0">Día 1</option>
                 <option value="1">Semana 1</option>
@@ -23,7 +23,7 @@
         
         <section class="card">
             <div class="grid-inputs">
-                <div class="field"><label>N° Granja:*</label><input type="number" id="granja" placeholder="Completar número" onchange="verificarCambioLote()"></div>
+                <div class="field"><label>N° Granja:*</label><input type="number" id="granja" placeholder="N°" onchange="verificarCambioLote()"></div>
                 <div class="field"><label>F. Nacimiento:*</label><input type="date" id="fechaNacimiento" onchange="verificarCambioLote()"></div>
                 <div class="field"><label>F. Registro:</label><input type="date" id="fechaGeneral" onchange="actualizarEdad()"></div>
                 <div class="field"><label>Edad (Días):</label><input type="text" id="edadAve" readonly value="0"></div>
@@ -31,7 +31,7 @@
             <div class="field" style="margin-top:10px;"><label>Tara (kg):</label><input type="number" id="tara" step="0.001" value="0.000"></div>
         </section>
 
-        <section class="card section-pesaje">
+        <section class="card">
             <h3>1. Pesaje y Mortalidad</h3>
             <div class="grid-inputs">
                 <div class="field"><label>N° Corral*</label><input type="number" id="pesajeCorral" oninput="autocompletarTratamiento(this, 'pesajeTrat')"></div>
@@ -44,7 +44,7 @@
             <button onclick="registrarPesaje()" class="btn-add">Registrar Pesaje</button>
         </section>
 
-        <section class="card section-alimento">
+        <section class="card" style="border-left: 5px solid #ff9800;">
             <h3>2. Control de Alimento</h3>
             <div class="grid-inputs">
                 <div class="field"><label>N° Corral*</label><input type="number" id="alimCorral" oninput="autocompletarTratamiento(this, 'alimTrat')"></div>
@@ -52,18 +52,19 @@
                 <div class="field"><label>Agregado (kg)</label><input type="number" id="alimAgregado" step="0.1"></div>
                 <div class="field"><label>Sobrante (kg)</label><input type="number" id="alimSobrante" step="0.1"></div>
             </div>
-            <button onclick="registrarAlimento()" class="btn-add btn-alim">Registrar Alimento</button>
+            <button onclick="registrarAlimento()" class="btn-add" style="background-color: #ff9800;">Registrar Alimento</button>
         </section>
 
         <section class="card">
-            <h3>Registros Guardados (Semana <span id="semDisplay">0</span>)</h3>
+            <h3>Registros Guardados (<span id="semDisplay">Día 1</span>)</h3>
             <div style="overflow-x:auto;">
                 <table id="tablaRegistros">
                     <thead>
                         <tr>
                             <th>Corral</th>
-                            <th>Tipo</th>
-                            <th>Dato Principal</th>
+                            <th>Trat.</th>
+                            <th>Prom. Ave</th>
+                            <th>Prom. Trat.</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
