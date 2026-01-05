@@ -135,16 +135,22 @@ function guardarProgreso() {
     alert("¡Historial guardado!");
 }
 
+// --- ACTUALIZACIÓN DE EXPORTAR (Añade columna Peso Muertos) ---
 function exportarExcel() {
     let csv = "\uFEFFGranja:;" + document.getElementById('granja').value + ";Nacimiento:;" + document.getElementById('fechaNacimiento').value + "\n";
-    csv += "TIPO;SEMANA;FECHA;EDAD;CORRAL;TRATAMIENTO;PESO_AVE;MUERTOS;ALIM_AGREGADO;ALIM_SOBRANTE\n";
+    // Encabezado con PESO_MUERTOS
+    csv += "TIPO;SEMANA;FECHA;EDAD;CORRAL;TRATAMIENTO;PESO_AVE;MUERTOS;PESO_MUERTOS;ALIM_AGREGADO;ALIM_SOBRANTE\n";
+
     for (let s in historialPesos) {
-        historialPesos[s].forEach(r => { csv += `PESAJE;${s};${r.fecha};${r.edad};${r.nro};${r.trat};${r.pesoAve};${r.muertos};-;- \n`; });
+        historialPesos[s].forEach(r => { 
+            // Se incluye r.muertosPeso (asegúrate de que esté capturado en registrarPesaje)
+            csv += `PESAJE;${s};${r.fecha};${r.edad};${r.nro};${r.trat};${r.pesoAve};${r.muertos};${r.muertosPeso || 0};-;- \n`; 
+        });
     }
     for (let s in historialAlimento) {
         historialAlimento[s].forEach(r => { 
             const t = mapaTratamientos[r.nro] || "N/A";
-            csv += `ALIMENTO;${s};${r.fecha};-;${r.nro};${t};-;-;${r.agr};${r.sob}\n`; 
+            csv += `ALIMENTO;${s};${r.fecha};-;${r.nro};${t};-;-;-;${r.agr};${r.sob}\n`; 
         });
     }
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -154,5 +160,39 @@ function exportarExcel() {
     a.click();
 }
 
-function limpiarSeccionPesaje() { document.getElementById('pesajeCorral').value = ""; document.getElementById('pesoTotal').value = ""; document.getElementById('muertosCant').value = "0"; }
-function limpiarSeccionAlimento() { document.getElementById('alimCorral').value = ""; document.getElementById('alimAgregado').value = ""; document.getElementById('alimSobrante').value = ""; }
+// --- FUNCIÓN PARA BORRAR TODO ---
+function borrarTodoElHistorial() {
+    const confirmar1 = confirm("¿Estás seguro de que quieres borrar TODOS los datos de este lote? Esta acción no se puede deshacer.");
+    if (confirmar1) {
+        const confirmar2 = confirm("¡Última advertencia! Se eliminarán pesajes y alimentos de todas las semanas. ¿Continuar?");
+        if (confirmar2) {
+            // Limpiar variables
+            historialPesos = {};
+            historialAlimento = {};
+            mapaTratamientos = {};
+            
+            // Limpiar LocalStorage del lote actual
+            if (loteActualKey) {
+                localStorage.removeItem(`data_${loteActualKey}`);
+            }
+            
+            // Actualizar vista
+            actualizarTablaVista();
+            alert("Historial borrado por completo.");
+        }
+    }
+}
+
+function limpiarSeccionPesaje() { 
+    document.getElementById('pesajeCorral').value = ""; 
+    document.getElementById('pesoTotal').value = ""; 
+    document.getElementById('muertosCant').value = "0"; 
+    document.getElementById('muertosPeso').value = "0"; // Añadimos esta línea
+}
+
+function limpiarSeccionAlimento() { 
+    document.getElementById('alimCorral').value = ""; 
+    document.getElementById('alimAgregado').value = ""; 
+    document.getElementById('alimSobrante').value = ""; 
+    document.getElementById('alimTrat').value = ""; // También limpiamos el tratamiento visual
+}
