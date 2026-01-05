@@ -1,26 +1,24 @@
 body { font-family: sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; color: #333; }
 .container { max-width: 600px; margin: auto; }
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: 10px; }
 h1 { font-size: 1.1rem; margin: 0; color: #1a73e8; }
 .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; }
-h3 { margin-top: 0; font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 
-/* Forzar fondo blanco en todos los inputs */
-input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; width: 100%; box-sizing: border-box; background-color: white !important; }
-input:read-only { background-color: #f8f9fa !important; color: #666; border: 1px solid #eee; }
+/* Eliminación forzada del fondo azul */
+input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; width: 100%; box-sizing: border-box; background-color: #ffffff !important; }
+input:read-only { background-color: #f8f9fa !important; color: #666; }
 
 .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.field { display: flex; flex-direction: column; }
+.field { display: flex; flex-direction: column; margin-bottom: 5px; }
 label { font-size: 0.7rem; font-weight: bold; margin-bottom: 3px; color: #666; }
 
-.btn-add { width: 100%; padding: 14px; background-color: #1a73e8; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
+.btn-add { width: 100%; padding: 14px; background-color: #1a73e8; color: white; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; }
 .btn-alim { background-color: #ff9800; }
 .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.btn-save { padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+.btn-save { padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 
-/* Estilo Tabla */
-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-th { background: #f8f9fa; color: #555; }
-.row-peso { border-left: 4px solid #1a73e8; color: #1a73e8; }
-.row-alim { border-left: 4px solid #ff9800; color: #e67e22; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+th { background: #f1f3f4; }
+.row-peso { color: #1a73e8; font-weight: bold; }
+.row-alim { color: #e67e22; font-weight: bold; }
