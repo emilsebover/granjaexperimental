@@ -22,3 +22,7 @@ th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; fon
 th { background: #f1f3f4; }
 .row-peso { color: #1a73e8; font-weight: bold; }
 .row-alim { color: #e67e22; font-weight: bold; }
+.alerta-desvio {
+    color: #d93025 !important;
+    font-weight: bold;
+}

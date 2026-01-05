@@ -60,15 +60,16 @@ function registrarPesaje() {
     const tara = parseFloat(document.getElementById('tara').value) || 0;
     const cant = parseInt(document.getElementById('cantidadAves').value) || 1;
 
-    if (!nro || !trat || pesoT === 0) return alert("Faltan datos");
+    if (!nro || !trat || pesoT === 0) return alert("Faltan datos en Pesaje");
     if (!mapaTratamientos[nro]) mapaTratamientos[nro] = trat;
 
     let pAve = (pesoT - tara) / cant;
-    let unit = (sem === "0") ? "g" : "kg";
-    if (sem === "0") pAve *= 1000;
+    if (sem === "0") pAve *= 1000; // Convertir a gramos en Día 1
 
     const reg = {
-        nro, trat, pesoAve: pAve.toFixed(3) + unit,
+        nro, 
+        trat, 
+        pesoAve: parseFloat(pAve.toFixed(3)),
         muertos: document.getElementById('muertosCant').value,
         fecha: document.getElementById('fechaGeneral').value,
         edad: document.getElementById('edadAve').value
@@ -82,6 +83,7 @@ function registrarPesaje() {
     actualizarTablaVista();
     limpiarSeccionPesaje();
 }
+
 
 function registrarAlimento() {
     const sem = document.getElementById('selectorSemana').value;
@@ -108,16 +110,45 @@ function actualizarTablaVista() {
     const tbody = document.querySelector("#tablaRegistros tbody");
     tbody.innerHTML = "";
 
-    // Pesajes
+    // 1. Calcular promedios por tratamiento para esta semana
+    let sumasTrat = {}; // { 'A': { suma: 0, cant: 0 } }
     if (historialPesos[sem]) {
         historialPesos[sem].forEach(r => {
-            tbody.innerHTML += `<tr class="row-peso"><td>${r.nro}</td><td>PESO</td><td>${r.pesoAve}</td></tr>`;
+            if (!sumasTrat[r.trat]) sumasTrat[r.trat] = { suma: 0, cant: 0 };
+            sumasTrat[r.trat].suma += r.pesoAve;
+            sumasTrat[r.trat].cant += 1;
         });
     }
-    // Alimento
+
+    // 2. Dibujar la tabla de Pesajes con validación de desvío
+    if (historialPesos[sem]) {
+        historialPesos[sem].forEach(r => {
+            const promTrat = sumasTrat[r.trat].suma / sumasTrat[r.trat].cant;
+            
+            // Cálculo del desvío porcentual: ((Valor - Promedio) / Promedio) * 100
+            const desvioPc = ((r.pesoAve - promTrat) / promTrat) * 100;
+            const esAlerta = Math.abs(desvioPc) >= 2.5;
+
+            tbody.innerHTML += `
+                <tr class="row-peso">
+                    <td>${r.nro}</td>
+                    <td>${r.trat}</td>
+                    <td class="${esAlerta ? 'alerta-desvio' : ''}">${r.pesoAve.toFixed(3)}</td>
+                    <td>${promTrat.toFixed(3)}</td>
+                </tr>`;
+        });
+    }
+
+    // 3. Dibujar registros de Alimento (se mantienen igual)
     if (historialAlimento[sem]) {
         historialAlimento[sem].forEach(r => {
-            tbody.innerHTML += `<tr class="row-alim"><td>${r.nro}</td><td>ALIM</td><td>+${r.agr} / -${r.sob}</td></tr>`;
+            const trat = mapaTratamientos[r.nro] || "-";
+            tbody.innerHTML += `
+                <tr class="row-alim">
+                    <td>${r.nro}</td>
+                    <td>${trat}</td>
+                    <td colspan="2">Alim: +${r.agr} / -${r.sob}</td>
+                </tr>`;
         });
     }
 }
