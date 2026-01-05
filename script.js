@@ -235,3 +235,10 @@ function limpiarSeccionAlimento() {
     document.getElementById('alimSobrante').value = "";
     document.getElementById('alimTrat').value = "";
 }
+
+function resetTotal() {
+    if (confirm("¿Borrar todos los lotes guardados?")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
