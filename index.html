@@ -9,9 +9,9 @@
 <body>
     <div class="container">
         <header>
-            <h1>Granja experimental</h1>
-            <select id="selectorSemana" onchange="cambiarSemana()">
-                <option value="0">Día 1 (Inicial)</option>
+            <h1>Registro Avícola</h1>
+            <select id="selectorSemana" onchange="actualizarInterfaz()">
+                <option value="0">Día 1</option>
                 <option value="1">Semana 1</option>
                 <option value="2">Semana 2</option>
                 <option value="3">Semana 3</option>
@@ -21,68 +21,45 @@
             </select>
         </header>
         
-       <section class="card">
-    <div class="grid-inputs">
-        <div class="field">
-            <label>N° Granja:*</label>
-            <input type="number" id="granja" placeholder="Completar número" onchange="verificarCambioLote()">
-        </div>
-        <div class="field">
-            <label>Fecha Nacimiento:*</label>
-            <input type="date" id="fechaNacimiento" onchange="verificarCambioLote()">
-        </div>
-        <div class="field">
-            <label>Fecha Pesaje:</label>
-            <input type="date" id="fechaPesaje" onchange="actualizarEdad()">
-        </div>
-        <div class="field">
-            <label>Edad (Días):</label>
-            <input type="text" id="edadAve" readonly>
-        </div>
-    </div>
-    <div class="field" style="margin-top: 10px;">
-        <label>Tara (kg / g en Día 1):</label>
-        <input type="number" id="tara" step="0.001" value="0.000">
-    </div>
-    <p id="avisoLote" style="font-size: 0.7rem; color: #d93025; margin-top: 5px; display: none;">Nuevo lote detectado: Los datos se han reiniciado.</p>
-</section>
-
         <section class="card">
-            <h3 id="tituloCarga">Carga de Datos</h3>
             <div class="grid-inputs">
-                <div class="field"><label>N° Corral*</label><input type="number" id="nroCorral"></div>
-                <div class="field"><label>Tratamiento*</label><input type="text" id="tratamiento" maxlength="1"></div>
-                <div class="field"><label>Peso Total*</label><input type="number" id="pesoTotal" step="0.001"></div>
-                <div class="field"><label>Cant. Aves*</label><input type="number" id="cantidadAves"></div>
-                <div class="field"><label>Alim. Agregado</label><input type="number" id="alimAgregado" step="0.1"></div>
-                <div class="field"><label>Alim. Sobrante</label><input type="number" id="alimSobrante" step="0.1"></div>
-                <div class="field"><label>Muertos (Cant)</label><input type="number" id="muertosCant" value="0"></div>
-                <div class="field"><label>Peso Muertos</label><input type="number" id="muertosPeso" step="0.001" value="0"></div>
+                <div class="field"><label>N° Granja:*</label><input type="number" id="granja" placeholder="Completar número" onchange="verificarCambioLote()"></div>
+                <div class="field"><label>F. Nacimiento:*</label><input type="date" id="fechaNacimiento" onchange="verificarCambioLote()"></div>
+                <div class="field"><label>F. Registro:</label><input type="date" id="fechaGeneral" onchange="actualizarEdad()"></div>
+                <div class="field"><label>Edad (Días):</label><input type="text" id="edadAve" readonly value="0"></div>
             </div>
-            <button onclick="registrarCorral()" class="btn-add">Guardar / Actualizar Corral</button>
+            <div class="field" style="margin-top:10px;"><label>Tara (kg):</label><input type="number" id="tara" step="0.001" value="0.000"></div>
         </section>
 
         <section class="card">
-            <h3>Registros de la Semana</h3>
-            <div style="overflow-x:auto;">
-                <table id="tablaRegistros">
-                    <thead>
-                        <tr>
-                            <th>Corral</th>
-                            <th>Trat.</th>
-                            <th>Peso Ave</th>
-                            <th>Alim.</th>
-                            <th>Mtos.</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <h3 style="color: #1a73e8;">1. Pesaje y Mortalidad</h3>
+            <div class="grid-inputs">
+                <div class="field"><label>N° Corral*</label><input type="number" id="pesajeCorral" oninput="autocompletarTratamiento(this, 'pesajeTrat')"></div>
+                <div class="field"><label>Tratamiento*</label><input type="text" id="pesajeTrat" maxlength="1"></div>
+                <div class="field"><label>Peso Total*</label><input type="number" id="pesoTotal" step="0.001"></div>
+                <div class="field"><label>Cant. Aves*</label><input type="number" id="cantidadAves"></div>
+                <div class="field"><label>Muertos (Cant)</label><input type="number" id="muertosCant" value="0"></div>
+                <div class="field"><label>Peso Muertos</label><input type="number" id="muertosPeso" step="0.001" value="0"></div>
             </div>
+            <button onclick="registrarPesaje()" class="btn-add">Guardar Pesaje</button>
+        </section>
+
+        <section class="card" style="border-left: 5px solid #ff9800;">
+            <h3 style="color: #e67e22;">2. Control de Alimento</h3>
+            <div class="grid-inputs">
+                <div class="field"><label>N° Corral*</label><input type="number" id="alimCorral" oninput="autocompletarTratamiento(this, 'alimTrat')"></div>
+                <div class="field"><label>Tratamiento</label><input type="text" id="alimTrat" readonly></div>
+                <div class="field"><label>Agregado (kg)</label><input type="number" id="alimAgregado" step="0.1"></div>
+                <div class="field"><label>Sobrante (kg)</label><input type="number" id="alimSobrante" step="0.1"></div>
+            </div>
+            <button onclick="registrarAlimento()" class="btn-add" style="background-color: #ff9800;">Guardar Alimento</button>
+        </section>
+
+        <section class="card">
             <div class="btn-group">
-                <button onclick="guardarProgreso()" class="btn-save" style="background-color: #28a745;">Guardar Datos</button>
-                <button onclick="exportarExcel()" class="btn-save" style="background-color: #6c757d;">Exportar CSV</button>
+                <button onclick="guardarProgreso()" class="btn-save" style="background-color:#28a745;">Guardar Lote</button>
+                <button onclick="exportarExcel()" class="btn-save" style="background-color:#6c757d;">Exportar CSV</button>
             </div>
-            <button onclick="resetTotal()" style="width:100%; margin-top:10px; font-size:0.7rem; background:none; border:none; color:gray; text-decoration:underline;">Borrar memoria total</button>
         </section>
     </div>
     <script src="script.js"></script>

@@ -5,12 +5,26 @@ let loteActualKey = "";
 
 window.onload = () => {
     const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('fechaPesaje').value = hoy;
-    document.getElementById('fechaAlim').value = hoy;
+    document.getElementById('fechaGeneral').value = hoy;
     document.getElementById('granja').value = localStorage.getItem('ultima_granja') || '';
     document.getElementById('fechaNacimiento').value = localStorage.getItem('ultima_fechaNacimiento') || '';
     verificarCambioLote();
+    actualizarEdad();
 };
+
+function actualizarEdad() {
+    const fNac = document.getElementById('fechaNacimiento').value;
+    const fPes = document.getElementById('fechaGeneral').value;
+    const campoEdad = document.getElementById('edadAve');
+    
+    if (fNac && fPes) {
+        const diff = new Date(fPes) - new Date(fNac);
+        const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+        campoEdad.value = dias >= 0 ? dias : 0;
+    } else {
+        campoEdad.value = 0;
+    }
+}
 
 function verificarCambioLote() {
     const granja = document.getElementById('granja').value;
@@ -24,8 +38,10 @@ function verificarCambioLote() {
         historialPesos = datos.historialPesos || {};
         historialAlimento = datos.historialAlimento || {};
         mapaTratamientos = datos.mapaTratamientos || {};
+        
         localStorage.setItem('ultima_granja', granja);
         localStorage.setItem('ultima_fechaNacimiento', nacimiento);
+        actualizarEdad();
     }
 }
 
@@ -49,14 +65,16 @@ function registrarPesaje() {
     const tara = parseFloat(document.getElementById('tara').value) || 0;
     const cant = parseInt(document.getElementById('cantidadAves').value) || 1;
 
-    if (!nro || !trat || pesoT === 0) return alert("Faltan datos en pesaje");
+    if (!nro || !trat || pesoT === 0) return alert("Faltan datos obligatorios en Pesaje");
+    
     if (!mapaTratamientos[nro]) mapaTratamientos[nro] = trat;
 
     let pAve = (pesoT - tara) / cant;
-    if (sem == "0") pAve *= 1000;
+    if (sem === "0") pAve *= 1000;
 
     const reg = {
-        fecha: document.getElementById('fechaPesaje').value,
+        fecha: document.getElementById('fechaGeneral').value,
+        edad: document.getElementById('edadAve').value,
         nro, trat, pesoAve: pAve.toFixed(3),
         muertos: document.getElementById('muertosCant').value,
         pesoM: document.getElementById('muertosPeso').value
@@ -67,7 +85,8 @@ function registrarPesaje() {
     if (idx !== -1) historialPesos[sem][idx] = reg;
     else historialPesos[sem].push(reg);
     
-    alert("Pesaje guardado");
+    alert("Pesaje del corral " + nro + " registrado.");
+    limpiarSeccionPesaje();
 }
 
 function registrarAlimento() {
@@ -79,7 +98,8 @@ function registrarAlimento() {
     if (!nro) return alert("Indica el número de corral");
 
     const reg = {
-        fecha: document.getElementById('fechaAlim').value,
+        fecha: document.getElementById('fechaGeneral').value,
+        edad: document.getElementById('edadAve').value,
         nro, agregado, sobrante
     };
 
@@ -88,29 +108,29 @@ function registrarAlimento() {
     if (idx !== -1) historialAlimento[sem][idx] = reg;
     else historialAlimento[sem].push(reg);
 
-    alert("Alimento guardado");
+    alert("Alimento del corral " + nro + " registrado.");
+    limpiarSeccionAlimento();
 }
 
 function guardarProgreso() {
+    if (!loteActualKey) return alert("Primero completa Granja y Nacimiento");
     localStorage.setItem(`data_${loteActualKey}`, JSON.stringify({ historialPesos, historialAlimento, mapaTratamientos }));
-    alert("Lote guardado en memoria");
+    alert("Lote guardado en la memoria del celular.");
 }
 
 function exportarExcel() {
-    let csv = "\uFEFFGranja:;" + document.getElementById('granja').value + ";Nacimiento:;" + document.getElementById('fechaNacimiento').value + "\n\n";
-    csv += "TIPO;SEMANA;FECHA;CORRAL;TRATAMIENTO;PESO_AVE;MUERTOS;PESO_MUERTOS;ALIM_AGREGADO;ALIM_SOBRANTE\n";
+    let csv = "\uFEFFGranja:;" + document.getElementById('granja').value + ";Nacimiento:;" + document.getElementById('fechaNacimiento').value + "\n";
+    csv += "TIPO;SEMANA;FECHA;EDAD;CORRAL;TRATAMIENTO;PESO_AVE;MUERTOS;PESO_MUERTOS;ALIM_AGREGADO;ALIM_SOBRANTE\n";
 
-    // Exportar Pesos
     for (let s in historialPesos) {
         historialPesos[s].forEach(r => {
-            csv += `PESAJE;${s};${r.fecha};${r.nro};${r.trat};${r.pesoAve};${r.muertos};${r.pesoM};-;- \n`;
+            csv += `PESAJE;${s};${r.fecha};${r.edad};${r.nro};${r.trat};${r.pesoAve};${r.muertos};${r.pesoM};-;-\n`;
         });
     }
-    // Exportar Alimento
     for (let s in historialAlimento) {
         historialAlimento[s].forEach(r => {
             const trat = mapaTratamientos[r.nro] || "N/A";
-            csv += `ALIMENTO;${s};${r.fecha};${r.nro};${trat};-;-;-;${r.agregado};${r.sobrante}\n`;
+            csv += `ALIMENTO;${s};${r.fecha};${r.edad};${r.nro};${trat};-;-;-;${r.agregado};${r.sobrante}\n`;
         });
     }
 
@@ -122,4 +142,18 @@ function exportarExcel() {
     a.click();
 }
 
-function cambiarSemana() {}
+function limpiarSeccionPesaje() {
+    document.getElementById('pesajeCorral').value = "";
+    document.getElementById('pesoTotal').value = "";
+    document.getElementById('muertosCant').value = "0";
+    document.getElementById('muertosPeso').value = "0";
+}
+
+function limpiarSeccionAlimento() {
+    document.getElementById('alimCorral').value = "";
+    document.getElementById('alimAgregado').value = "";
+    document.getElementById('alimSobrante').value = "";
+    document.getElementById('alimTrat').value = "";
+}
+
+function actualizarInterfaz() {}
