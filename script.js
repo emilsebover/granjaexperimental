@@ -53,65 +53,61 @@ function autocompletarTratamiento(input, targetId) {
 }
 
 function registrarPesaje() {
+    // 1. Capturar valores
     const sem = document.getElementById('selectorSemana').value;
     const nro = document.getElementById('pesajeCorral').value;
-    const trat = document.getElementById('pesajeTrat').value.toUpperCase();
+    const tratInput = document.getElementById('pesajeTrat').value;
     const pesoT = parseFloat(document.getElementById('pesoTotal').value) || 0;
     const tara = parseFloat(document.getElementById('tara').value) || 0;
     const cant = parseInt(document.getElementById('cantidadAves').value) || 1;
 
-    if (!nro || !trat || pesoT === 0) return alert("Faltan datos en Pesaje");
+    // 2. Validaciones básicas
+    if (!nro || !tratInput || pesoT === 0) {
+        alert("Por favor completa: Corral, Tratamiento y Peso Total.");
+        return;
+    }
+
+    const trat = tratInput.toUpperCase();
     if (!mapaTratamientos[nro]) mapaTratamientos[nro] = trat;
 
+    // 3. Cálculo de peso promedio
     let pAve = (pesoT - tara) / cant;
-    if (sem === "0") pAve *= 1000; // Convertir a gramos en Día 1
+    if (sem === "0") pAve *= 1000; // Gramos en Día 1
 
+    // 4. Crear objeto de registro
     const reg = {
-        nro, 
-        trat, 
+        nro: nro,
+        trat: trat,
         pesoAve: parseFloat(pAve.toFixed(3)),
         muertos: document.getElementById('muertosCant').value,
         fecha: document.getElementById('fechaGeneral').value,
         edad: document.getElementById('edadAve').value
     };
 
+    // 5. Guardar en el historial
     if (!historialPesos[sem]) historialPesos[sem] = [];
     const idx = historialPesos[sem].findIndex(r => r.nro === nro);
-    if (idx !== -1) historialPesos[sem][idx] = reg;
-    else historialPesos[sem].push(reg);
+    if (idx !== -1) {
+        historialPesos[sem][idx] = reg;
+    } else {
+        historialPesos[sem].push(reg);
+    }
     
+    // 6. Actualizar y Limpiar
     actualizarTablaVista();
     limpiarSeccionPesaje();
 }
 
-
-function registrarAlimento() {
-    const sem = document.getElementById('selectorSemana').value;
-    const nro = document.getElementById('alimCorral').value;
-    const agr = document.getElementById('alimAgregado').value || "0";
-    const sob = document.getElementById('alimSobrante').value || "0";
-
-    if (!nro) return alert("Indica el corral");
-
-    const reg = { nro, agr, sob, fecha: document.getElementById('fechaGeneral').value, edad: document.getElementById('edadAve').value };
-
-    if (!historialAlimento[sem]) historialAlimento[sem] = [];
-    const idx = historialAlimento[sem].findIndex(r => r.nro === nro);
-    if (idx !== -1) historialAlimento[sem][idx] = reg;
-    else historialAlimento[sem].push(reg);
-
-    actualizarTablaVista();
-    limpiarSeccionAlimento();
-}
-
 function actualizarTablaVista() {
     const sem = document.getElementById('selectorSemana').value;
-    document.getElementById('semDisplay').innerText = sem;
     const tbody = document.querySelector("#tablaRegistros tbody");
+    if (!tbody) return; 
+    
     tbody.innerHTML = "";
+    document.getElementById('semDisplay').innerText = sem;
 
-    // 1. Calcular promedios por tratamiento para esta semana
-    let sumasTrat = {}; // { 'A': { suma: 0, cant: 0 } }
+    // Calcular promedios por tratamiento
+    let sumasTrat = {}; 
     if (historialPesos[sem]) {
         historialPesos[sem].forEach(r => {
             if (!sumasTrat[r.trat]) sumasTrat[r.trat] = { suma: 0, cant: 0 };
@@ -120,38 +116,40 @@ function actualizarTablaVista() {
         });
     }
 
-    // 2. Dibujar la tabla de Pesajes con validación de desvío
+    // Dibujar Pesajes
     if (historialPesos[sem]) {
         historialPesos[sem].forEach(r => {
             const promTrat = sumasTrat[r.trat].suma / sumasTrat[r.trat].cant;
-            
-            // Cálculo del desvío porcentual: ((Valor - Promedio) / Promedio) * 100
             const desvioPc = ((r.pesoAve - promTrat) / promTrat) * 100;
+            // Alerta si el desvío es mayor o igual a 2.5%
             const esAlerta = Math.abs(desvioPc) >= 2.5;
+            const claseRojo = esAlerta ? 'style="color:red; font-weight:bold;"' : '';
 
             tbody.innerHTML += `
                 <tr class="row-peso">
                     <td>${r.nro}</td>
                     <td>${r.trat}</td>
-                    <td class="${esAlerta ? 'alerta-desvio' : ''}">${r.pesoAve.toFixed(3)}</td>
+                    <td ${claseRojo}>${r.pesoAve.toFixed(3)}</td>
                     <td>${promTrat.toFixed(3)}</td>
                 </tr>`;
         });
     }
 
-    // 3. Dibujar registros de Alimento (se mantienen igual)
+    // Dibujar Alimento
     if (historialAlimento[sem]) {
         historialAlimento[sem].forEach(r => {
-            const trat = mapaTratamientos[r.nro] || "-";
+            const t = mapaTratamientos[r.nro] || "-";
             tbody.innerHTML += `
                 <tr class="row-alim">
                     <td>${r.nro}</td>
-                    <td>${trat}</td>
+                    <td>${t}</td>
                     <td colspan="2">Alim: +${r.agr} / -${r.sob}</td>
                 </tr>`;
         });
     }
 }
+
+
 
 function guardarProgreso() {
     if (!loteActualKey) return alert("Falta Granja/Nacimiento");
