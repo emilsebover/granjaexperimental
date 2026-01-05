@@ -101,10 +101,16 @@ function registrarPesaje() {
 function actualizarTablaVista() {
     const sem = document.getElementById('selectorSemana').value;
     const tbody = document.querySelector("#tablaRegistros tbody");
+    const semDisplay = document.getElementById('semDisplay'); // Referencia al <span> del HTML
+    
     if (!tbody) return; 
     
     tbody.innerHTML = "";
-    document.getElementById('semDisplay').innerText = sem;
+    
+    // Actualizar el texto del encabezado de la tabla
+    if (semDisplay) {
+        semDisplay.innerText = sem === "0" ? "Día 1" : "Semana " + sem;
+    }
 
     // Calcular promedios por tratamiento
     let sumasTrat = {}; 
@@ -116,12 +122,11 @@ function actualizarTablaVista() {
         });
     }
 
-    // Dibujar Pesajes
+    // Dibujar Pesajes con alerta de desvío
     if (historialPesos[sem]) {
         historialPesos[sem].forEach(r => {
             const promTrat = sumasTrat[r.trat].suma / sumasTrat[r.trat].cant;
             const desvioPc = ((r.pesoAve - promTrat) / promTrat) * 100;
-            // Alerta si el desvío es mayor o igual a 2.5%
             const esAlerta = Math.abs(desvioPc) >= 2.5;
             const claseRojo = esAlerta ? 'style="color:red; font-weight:bold;"' : '';
 
@@ -152,12 +157,49 @@ function actualizarTablaVista() {
 
 
 function guardarProgreso() {
-    if (!loteActualKey) return alert("Falta Granja/Nacimiento");
-    localStorage.setItem(`data_${loteActualKey}`, JSON.stringify({ historialPesos, historialAlimento, mapaTratamientos }));
-    localStorage.setItem('ultima_granja', document.getElementById('granja').value);
-    localStorage.setItem('ultima_fechaNacimiento', document.getElementById('fechaNacimiento').value);
-    alert("Memoria actualizada correctamente.");
+    const granja = document.getElementById('granja').value;
+    const naci = document.getElementById('fechaNacimiento').value;
+
+    if (!granja || !naci) {
+        alert("Primero completa N° Granja y Fecha de Nacimiento");
+        return;
+    }
+
+    const key = `${granja}_${naci}`;
+    const datosParaGuardar = {
+        historialPesos: historialPesos,
+        historialAlimento: historialAlimento,
+        mapaTratamientos: mapaTratamientos
+    };
+
+    localStorage.setItem(`data_${key}`, JSON.stringify(datosParaGuardar));
+    localStorage.setItem('ultima_granja', granja);
+    localStorage.setItem('ultima_fechaNacimiento', naci);
+    
+    alert("¡Historial guardado con éxito!");
 }
+<section class="card">
+    <h3>Registros Guardados (<span id="semDisplay">Día 1</span>)</h3>
+    <div style="overflow-x:auto;">
+        <table id="tablaRegistros">
+            <thead>
+                <tr>
+                    <th>Corral</th>
+                    <th>Trat.</th>
+                    <th>Prom. Ave</th>
+                    <th>Prom. Trat.</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+    
+    <div class="btn-group" style="margin-top: 20px;">
+        <button onclick="guardarProgreso()" class="btn-save" style="background-color:#28a745;">Guardar Lote</button>
+        <button onclick="exportarExcel()" class="btn-save" style="background-color:#6c757d;">Exportar CSV</button>
+    </div>
+</section>
 
 function exportarExcel() {
     let csv = "\uFEFFGranja:;" + document.getElementById('granja').value + ";Nacimiento:;" + document.getElementById('fechaNacimiento').value + "\n";
