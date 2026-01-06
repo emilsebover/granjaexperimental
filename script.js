@@ -58,6 +58,9 @@ function registrarPesaje() {
     const pesoT = parseFloat(document.getElementById('pesoTotal').value) || 0;
     const tara = parseFloat(document.getElementById('tara').value) || 0;
     const cant = parseInt(document.getElementById('cantidadAves').value) || 1;
+    
+    // --- NUEVA LÍNEA: Captura el peso de los muertos con decimales ---
+    const mPeso = parseFloat(document.getElementById('muertosPeso').value) || 0;
 
     if (!nro || !trat || pesoT === 0) return alert("Faltan datos");
     if (!mapaTratamientos[nro]) mapaTratamientos[nro] = trat;
@@ -65,7 +68,16 @@ function registrarPesaje() {
     let pAve = (pesoT - tara) / cant;
     if (sem === "0") pAve *= 1000;
 
-    const reg = { nro, trat, pesoAve: parseFloat(pAve.toFixed(3)), muertos: document.getElementById('muertosCant').value, fecha: document.getElementById('fechaGeneral').value, edad: document.getElementById('edadAve').value };
+    // --- OBJETO ACTUALIZADO: Añadimos muertosPeso al registro ---
+    const reg = { 
+        nro, 
+        trat, 
+        pesoAve: parseFloat(pAve.toFixed(3)), 
+        muertos: document.getElementById('muertosCant').value, 
+        muertosPeso: mPeso, // <--- Ahora sí se guarda el 0.1
+        fecha: document.getElementById('fechaGeneral').value, 
+        edad: document.getElementById('edadAve').value 
+    };
 
     if (!historialPesos[sem]) historialPesos[sem] = [];
     const idx = historialPesos[sem].findIndex(r => r.nro === nro);
@@ -74,6 +86,7 @@ function registrarPesaje() {
     
     actualizarTablaVista();
     limpiarSeccionPesaje();
+}
 }
 
 function registrarAlimento() {
@@ -138,15 +151,18 @@ function guardarProgreso() {
 // --- ACTUALIZACIÓN DE EXPORTAR (Añade columna Peso Muertos) ---
 function exportarExcel() {
     let csv = "\uFEFFGranja:;" + document.getElementById('granja').value + ";Nacimiento:;" + document.getElementById('fechaNacimiento').value + "\n";
-    // Encabezado con PESO_MUERTOS
     csv += "TIPO;SEMANA;FECHA;EDAD;CORRAL;TRATAMIENTO;PESO_AVE;MUERTOS;PESO_MUERTOS;ALIM_AGREGADO;ALIM_SOBRANTE\n";
 
     for (let s in historialPesos) {
         historialPesos[s].forEach(r => { 
-            // Se incluye r.muertosPeso (asegúrate de que esté capturado en registrarPesaje)
-            csv += `PESAJE;${s};${r.fecha};${r.edad};${r.nro};${r.trat};${r.pesoAve};${r.muertos};${r.muertosPeso || 0};-;- \n`; 
+            // Usamos .toFixed(2) para asegurar los dos decimales en el peso de muertos
+            let pMuertos = typeof r.muertosPeso === 'number' ? r.muertosPeso.toFixed(2) : parseFloat(r.muertosPeso || 0).toFixed(2);
+            
+            csv += `PESAJE;${s};${r.fecha};${r.edad};${r.nro};${r.trat};${r.pesoAve};${r.muertos};${pMuertos};-;- \n`; 
         });
     }
+    // ... (el resto de la función de alimento se mantiene igual)
+    
     for (let s in historialAlimento) {
         historialAlimento[s].forEach(r => { 
             const t = mapaTratamientos[r.nro] || "N/A";
