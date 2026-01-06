@@ -52,43 +52,56 @@ function autocompletarTratamiento(input, targetId) {
 }
 
 function registrarPesaje() {
+    // 1. Capturar valores
     const sem = document.getElementById('selectorSemana').value;
     const nro = document.getElementById('pesajeCorral').value;
-    const trat = document.getElementById('pesajeTrat').value.toUpperCase();
+    const tratInput = document.getElementById('pesajeTrat').value;
     const pesoT = parseFloat(document.getElementById('pesoTotal').value) || 0;
     const tara = parseFloat(document.getElementById('tara').value) || 0;
     const cant = parseInt(document.getElementById('cantidadAves').value) || 1;
     
-    // --- NUEVA LÍNEA: Captura el peso de los muertos con decimales ---
+    // Captura de muertos y su peso con decimales
+    const mCant = document.getElementById('muertosCant').value || "0";
     const mPeso = parseFloat(document.getElementById('muertosPeso').value) || 0;
 
-    if (!nro || !trat || pesoT === 0) return alert("Faltan datos");
+    // 2. Validaciones
+    if (!nro || !tratInput || pesoT === 0) {
+        alert("Faltan datos obligatorios (Corral, Tratamiento o Peso)");
+        return;
+    }
+
+    const trat = tratInput.toUpperCase();
     if (!mapaTratamientos[nro]) mapaTratamientos[nro] = trat;
 
+    // 3. Cálculo de peso promedio
     let pAve = (pesoT - tara) / cant;
-    if (sem === "0") pAve *= 1000;
+    if (sem === "0") pAve *= 1000; // Día 1 en gramos
 
-    // --- OBJETO ACTUALIZADO: Añadimos muertosPeso al registro ---
+    // 4. Crear el registro incluyendo el peso de muertos
     const reg = { 
-        nro, 
-        trat, 
+        nro: nro, 
+        trat: trat, 
         pesoAve: parseFloat(pAve.toFixed(3)), 
-        muertos: document.getElementById('muertosCant').value, 
-        muertosPeso: mPeso, // <--- Ahora sí se guarda el 0.1
+        muertos: mCant, 
+        muertosPeso: mPeso, // Guardamos el decimal (ej: 0.15)
         fecha: document.getElementById('fechaGeneral').value, 
         edad: document.getElementById('edadAve').value 
     };
 
+    // 5. Guardar en el historial
     if (!historialPesos[sem]) historialPesos[sem] = [];
     const idx = historialPesos[sem].findIndex(r => r.nro === nro);
-    if (idx !== -1) historialPesos[sem][idx] = reg;
-    else historialPesos[sem].push(reg);
     
+    if (idx !== -1) {
+        historialPesos[sem][idx] = reg;
+    } else {
+        historialPesos[sem].push(reg);
+    }
+    
+    // 6. Actualizar pantalla y limpiar
     actualizarTablaVista();
     limpiarSeccionPesaje();
-}
-}
-
+} // <--- ESTA LLAVE ES LA QUE SUELE FALTAR
 function registrarAlimento() {
     const sem = document.getElementById('selectorSemana').value;
     const nro = document.getElementById('alimCorral').value;
